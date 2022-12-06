@@ -1,7 +1,7 @@
 {
-  "name": "estuaryjs-test",
-  "version": "0.0.14-alpha",
-  "description": "",
+  "name": "estuary-js",
+  "version": "0.1.0-beta",
+  "description": "A client library for storing files on Filecoin and Ipfs through Estuary.tech.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -17,5 +17,13 @@
   "dependencies": {
     "axios": "^1.2.0",
     "ipfs-car": "^0.9.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kelindi/Estuary-Js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kelindi/Estuary-Js/issues"
+  },
+  "homepage": "https://github.com/kelindi/Estuary-Js#readme"
 }

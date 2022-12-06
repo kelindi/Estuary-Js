@@ -1,12 +1,9 @@
 import axios from 'axios';
-import { packToBlob } from 'ipfs-car/pack/blob';
-import { MemoryBlockStore } from 'ipfs-car/blockstore/memory';
 import { packToFs } from 'ipfs-car/pack/fs';
 import { FsBlockStore } from 'ipfs-car/blockstore/fs';
 import FormData from 'form-data';
 import * as fs from 'fs';
-import { CarReader } from '@ipld/car/reader';
-import fetch from 'node-fetch';
+
 export class Pin {
   status: string;
   created: string;
@@ -184,6 +181,7 @@ export const addFile = async (file: any, apiKey?: string): Promise<EstuaryFile> 
   formData.append('data', file);
 
   try {
+    console.log('Uploading file to Estuary...')
     let res = await axios.post(`https://upload.estuary.tech/content/add`, formData, {
       headers: {
         Authorization: `Bearer ${API_KEY}`,
@@ -192,7 +190,8 @@ export const addFile = async (file: any, apiKey?: string): Promise<EstuaryFile> 
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
     });
-    return res.data;
+    console.log('File Uploaded at https://gateway.estuary.tech/gw/ipfs/' + res.data.cid);
+    return new EstuaryFile(res.data.cid, res.data.estuaryId, 'https://gateway.estuary.tech/gw/ipfs/' + res.data.cid, res.data.providers);
   } catch (err) {
     console.log(`EstuaryJS: addFile Error status: ${err.response?.status}. Error code: ${err.code}. Error message: ${err.response.data}`);
     return err;
