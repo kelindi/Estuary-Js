@@ -1,0 +1,21 @@
+{
+  "name": "estuaryjs-test",
+  "version": "0.0.14-alpha",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "Kelindi",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.2.0",
+    "ipfs-car": "^0.9.1"
+  }
+}
