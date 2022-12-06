@@ -1,6 +1,6 @@
 {
   "name": "estuary-js",
-  "version": "0.1.0-beta",
+  "version": "0.1.1-beta",
   "description": "A client library for storing files on Filecoin and Ipfs through Estuary.tech.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
