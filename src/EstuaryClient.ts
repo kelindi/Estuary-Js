@@ -55,7 +55,7 @@ export class EstuaryFile {
   }
 }
 
-export const getPins = async (apiKey?: string) => {
+export const getPins = async (apiKey?: string): Promise<Pin[]> => {
   const API_KEY = process.env.Estuary_API_KEY || apiKey;
 
   try {
@@ -82,7 +82,7 @@ export const getPins = async (apiKey?: string) => {
   }
 };
 
-export const getPin = async (cid: string, apiKey?: string) => {
+export const getPin = async (cid: string, apiKey?: string): Promise<Pin> => {
   const API_KEY = process.env.Estuary_API_KEY || apiKey;
   try {
     let res = await axios.get(`https://api.estuary.tech/pinning/pins/${cid}`, {
@@ -104,7 +104,11 @@ export const getPin = async (cid: string, apiKey?: string) => {
   }
 };
 
-export const addPin = async (cid: string, name?: string, apiKey?: string):Promise<Pin> => {
+export const addPin = async (
+  cid: string,
+  name?: string,
+  apiKey?: string
+): Promise<Pin> => {
   const API_KEY = process.env.Estuary_API_KEY || apiKey;
   try {
     let res = await axios.post(
@@ -152,7 +156,7 @@ export const deletePin = async (cid: string, apiKey?: string) => {
   }
 };
 
-export const getKeys = async (apiKey?: string) => {
+export const getKeys = async (apiKey?: string):Promise<Key[]> => {
   const API_KEY = process.env.Estuary_API_KEY || apiKey;
   try {
     let res = await axios.get(`https://api.estuary.tech/user/api-keys`, {
@@ -176,7 +180,7 @@ export const getKeys = async (apiKey?: string) => {
   }
 };
 
-export const createKey = async (expiry: string, apiKey?: string) => {
+export const createKey = async (expiry: string, apiKey?: string):Promise<Key> => {
   const API_KEY = process.env.Estuary_API_KEY || apiKey;
   /*
             Create a new key
@@ -226,10 +230,7 @@ export const deleteKey = async (key: string, apiKey?: string) => {
   }
 };
 
-export const putFile = async (
-  file: any,
-  apiKey?: string
-): Promise<EstuaryFile> => {
+export const putFile = async (file: any, apiKey?: string): Promise<EstuaryFile> => {
   const API_KEY = process.env.Estuary_API_KEY || apiKey;
   const formData = new FormData();
   formData.append("data", file);
@@ -323,11 +324,7 @@ export const putFiles = async (
   }
 };
 
-export const getFiles = async (
-  apiKey?: string,
-  limit?: string,
-  offset?: string
-) => {
+export const getFiles = async (apiKey?: string, limit?: string, offset?: string) => {
   const API_KEY = process.env.Estuary_API_KEY || apiKey;
   try {
     let res = await axios.get(`https://api.estuary.tech/content/stats`, {
@@ -347,15 +344,3 @@ export const getFiles = async (
   }
 };
 
-export default {
-  getPins,
-  getPin,
-  addPin,
-  deletePin,
-  getKeys,
-  createKey,
-  deleteKey,
-  putFile,
-  putFiles,
-  getFiles,
-};
