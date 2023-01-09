@@ -1,8 +1,26 @@
 import axios from "axios";
-import { packToFs } from "ipfs-car/pack/fs";
-import { FsBlockStore } from "ipfs-car/blockstore/fs";
 import FormData from "form-data";
-import * as fs from "fs";
+
+export class EstuaryFile {
+  cid: string;
+  estuaryId: string;
+  retrievalUrl: string;
+  providers: string[];
+  constructor(
+    cid: string,
+    estuaryId: string,
+    retrievalUrl: string,
+    providers: string[]
+  ) {
+    this.cid = cid;
+    this.estuaryId = estuaryId;
+    this.retrievalUrl = retrievalUrl;
+    this.providers = providers;
+  }
+  deletePin() {
+    return deletePin(this.cid);
+  }
+}
 
 export class Pin {
   status: string;
@@ -34,29 +52,8 @@ export type Key = {
   expiry: string;
 };
 
-export class EstuaryFile {
-  cid: string;
-  estuaryId: string;
-  retrievalUrl: string;
-  providers: string[];
-  constructor(
-    cid: string,
-    estuaryId: string,
-    retrievalUrl: string,
-    providers: string[]
-  ) {
-    this.cid = cid;
-    this.estuaryId = estuaryId;
-    this.retrievalUrl = retrievalUrl;
-    this.providers = providers;
-  }
-  deletePin() {
-    return deletePin(this.cid);
-  }
-}
-
 export const getPins = async (apiKey?: string): Promise<Pin[]> => {
-  const API_KEY = process.env.Estuary_API_KEY || apiKey;
+  const API_KEY = apiKey;
 
   try {
     let res = await axios.get(`https://api.estuary.tech/pinning/pins`, {
@@ -83,7 +80,7 @@ export const getPins = async (apiKey?: string): Promise<Pin[]> => {
 };
 
 export const getPin = async (cid: string, apiKey?: string): Promise<Pin> => {
-  const API_KEY = process.env.Estuary_API_KEY || apiKey;
+  const API_KEY = apiKey;
   try {
     let res = await axios.get(`https://api.estuary.tech/pinning/pins/${cid}`, {
       headers: {
@@ -109,7 +106,7 @@ export const addPin = async (
   name?: string,
   apiKey?: string
 ): Promise<Pin> => {
-  const API_KEY = process.env.Estuary_API_KEY || apiKey;
+  const API_KEY = apiKey;
   try {
     let res = await axios.post(
       `https://api.estuary.tech/pinning/pins`,
@@ -138,7 +135,7 @@ export const addPin = async (
 };
 
 export const deletePin = async (cid: string, apiKey?: string) => {
-  const API_KEY = process.env.Estuary_API_KEY || apiKey;
+  const API_KEY = apiKey;
   try {
     let res = await axios.delete(
       `https://api.estuary.tech/pinning/pins/${cid}`,
@@ -157,7 +154,7 @@ export const deletePin = async (cid: string, apiKey?: string) => {
 };
 
 export const getKeys = async (apiKey?: string):Promise<Key[]> => {
-  const API_KEY = process.env.Estuary_API_KEY || apiKey;
+  const API_KEY = apiKey;
   try {
     let res = await axios.get(`https://api.estuary.tech/user/api-keys`, {
       headers: {
@@ -181,7 +178,7 @@ export const getKeys = async (apiKey?: string):Promise<Key[]> => {
 };
 
 export const createKey = async (expiry: string, apiKey?: string):Promise<Key> => {
-  const API_KEY = process.env.Estuary_API_KEY || apiKey;
+  const API_KEY = apiKey;
   /*
             Create a new key
             Expiry:string - Expiration - Valid time units are ns, us (or µs), ms, s, m, h. for example 300h
@@ -212,7 +209,7 @@ export const createKey = async (expiry: string, apiKey?: string):Promise<Key> =>
 };
 
 export const deleteKey = async (key: string, apiKey?: string) => {
-  const API_KEY = process.env.Estuary_API_KEY || apiKey;
+  const API_KEY = apiKey;
   try {
     let res = await axios.delete(
       `https://api.estuary.tech/user/api-keys/${key}`,
@@ -230,11 +227,11 @@ export const deleteKey = async (key: string, apiKey?: string) => {
   }
 };
 
+
 export const putFile = async (file: any, apiKey?: string): Promise<EstuaryFile> => {
-  const API_KEY = process.env.Estuary_API_KEY || apiKey;
+  const API_KEY = apiKey;
   const formData = new FormData();
   formData.append("data", file);
-
   try {
     console.log("Uploading file to Estuary...");
     let res = await axios.post(
@@ -243,12 +240,13 @@ export const putFile = async (file: any, apiKey?: string): Promise<EstuaryFile> 
       {
         headers: {
           Authorization: `Bearer ${API_KEY}`,
-          ...formData.getHeaders(),
+          ...formData.getHeaders ? formData.getHeaders() : { 'Content-Type': 'multipart/form-data' },
         },
         maxContentLength: Infinity,
         maxBodyLength: Infinity,
       }
     );
+    console.log(res);
     console.log(
       "File Uploaded at https://gateway.estuary.tech/gw/ipfs/" + res.data.cid
     );
@@ -259,6 +257,7 @@ export const putFile = async (file: any, apiKey?: string): Promise<EstuaryFile> 
       res.data.providers
     );
   } catch (err) {
+    console.log(err);
     console.log(
       `EstuaryJS: addFile Error status: ${err.response?.status}. Error code: ${err.code}. Error message: ${err.response.data}`
     );
@@ -266,66 +265,8 @@ export const putFile = async (file: any, apiKey?: string): Promise<EstuaryFile> 
   }
 };
 
-function sleep(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
-export const putFiles = async (
-  directory: string,
-  name: string,
-  apiKey?: string
-): Promise<EstuaryFile> => {
-  const API_KEY = process.env.Estuary_API_KEY || apiKey;
-  console.log("Creating CAR file...");
-  let { root, filename } = await packToFs({
-    input: `${directory}`,
-    output: `${directory}/${name}.car`,
-    wrapWithDirectory: false,
-    blockstore: new FsBlockStore(),
-  });
-  let path = `${directory}/${name}.car`;
-  while (!fs.existsSync(path)) {
-    sleep(200);
-  }
-  await sleep(1000);
-  let fileData = fs.readFileSync(path);
-  console.log("Uploading to Estuary...");
-  try {
-    let res = await axios.post(
-      `https://upload.estuary.tech/content/add-car`,
-      fileData,
-      {
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-        },
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-      }
-    );
-    console.log("Cleaning up...");
-    fs.unlinkSync(path);
-    console.log(
-      "File Uploaded at https://gateway.estuary.tech/gw/ipfs/" + res.data.cid
-    );
-    return new EstuaryFile(
-      res.data.cid,
-      res.data.estuaryId,
-      "https://gateway.estuary.tech/gw/ipfs/" + res.data.cid,
-      res.data.providers
-    );
-  } catch (err) {
-    console.log(err.response.data);
-    console.log(
-      `EstuaryJS(addFiles): Error status: ${err.response?.status}. Error code: ${err.code}. Error message: ${err.response.data}`
-    );
-    return err;
-  }
-};
-
 export const getFiles = async (apiKey?: string, limit?: string, offset?: string) => {
-  const API_KEY = process.env.Estuary_API_KEY || apiKey;
+  const API_KEY = apiKey;
   try {
     let res = await axios.get(`https://api.estuary.tech/content/stats`, {
       headers: {
